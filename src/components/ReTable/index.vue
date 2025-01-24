@@ -1,3 +1,4 @@
+<!-- ReTable.vue -->
 <template>
   <div>
     <!-- 过滤筛选功能 -->
@@ -23,7 +24,19 @@
         :width="column.width"
         :filters="column.filters"
         :filter-method="column.filterMethod"
-      />
+      >
+        <template #default="{ row, $index }">
+          <slot :name="column.prop" :row="row" :index="$index">
+            {{ row[column.prop] }}
+          </slot>
+        </template>
+      </el-table-column>
+      <!-- 自定义操作列 -->
+      <el-table-column v-if="$slots.action" label="操作" width="200px">
+        <template #default="{ row, $index }">
+          <slot name="action" :row="row" :index="$index" />
+        </template>
+      </el-table-column>
     </el-table>
 
     <!-- 分页组件 -->

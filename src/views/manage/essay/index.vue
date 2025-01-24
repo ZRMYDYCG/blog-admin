@@ -5,12 +5,23 @@
       :columns="columns"
       :enablePagination="true"
       :customPageSize="10"
-    />
+    >
+      <!-- 自定义操作列 -->
+      <template #action="{ row }">
+        <el-button type="primary" size="small" @click="handleEdit(row.id)"
+          >编辑</el-button
+        >
+        <el-button type="danger" size="small" @click="handleDelete(row.id)"
+          >删除</el-button
+        >
+      </template>
+    </ReTable>
   </div>
 </template>
 
 <script setup lang="ts">
 import ReTable from "@/components/ReTable/index.vue";
+import { ElButton } from "element-plus";
 
 interface Column {
   prop: string;
@@ -72,6 +83,17 @@ const fetchArticlesMock = async (params: {
     data: paginatedArticles,
     total: filteredArticles.length
   };
+};
+
+// 定义按钮点击事件
+const handleEdit = (id: number) => {
+  console.log("编辑文章 ID:", id);
+  // 在这里添加编辑文章的逻辑
+};
+
+const handleDelete = (id: number) => {
+  console.log("删除文章 ID:", id);
+  // 在这里添加删除文章的逻辑
 };
 </script>
 
