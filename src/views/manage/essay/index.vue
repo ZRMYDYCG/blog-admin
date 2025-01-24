@@ -1,62 +1,78 @@
 <template>
   <div>
-    <ReTable :data="tableData" :columns="columns" />
+    <ReTable
+      :fetchDataApi="fetchArticlesMock"
+      :columns="columns"
+      :enablePagination="true"
+      :customPageSize="10"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
 import ReTable from "@/components/ReTable/index.vue";
 
-// 定义数据
-const tableData = ref([]);
+interface Column {
+  prop: string;
+  label: string;
+  sortable?: boolean;
+  width?: string;
+  filters?: { text: string; value: string }[];
+  filterMethod?: (value: string, row: any) => boolean;
+}
 
-// 定义列配置
-const columns = ref([
-  { prop: "date", label: "日期", sortable: true, width: "180" },
+const columns: Column[] = [
+  { prop: "title", label: "标题", sortable: false, width: "200px" },
+  { prop: "tag", label: "标签", sortable: false, width: "300px" },
+  { prop: "category", label: "分类", sortable: false, width: "300px" },
+  { prop: "author", label: "作者", sortable: false, width: "150px" },
+  { prop: "content", label: "内容", sortable: false, width: "300px" },
+  { prop: "createdAt", label: "创建时间", sortable: true, width: "200px" },
+  { prop: "updatedAt", label: "更新时间", sortable: true, width: "200px" }
+];
+
+const mockArticles = [
   {
-    prop: "name",
-    label: "姓名",
-    sortable: true,
-    width: "180",
-    filters: [
-      { text: "张三", value: "张三" },
-      { text: "李四", value: "李四" }
-    ],
-    filterMethod: (value: string, row: any) => row.name === value
+    id: 1,
+    title: "文章标题1",
+    content: "文章内容1",
+    author: "作者1",
+    createdAt: "2023-10-01T12:00:00.000Z",
+    updatedAt: "2023-10-01T12:00:00.000Z"
   },
-  { prop: "address", label: "地址" }
-]);
+  {
+    id: 2,
+    title: "文章标题2",
+    content: "文章内容2",
+    author: "作者2",
+    createdAt: "2023-10-02T12:00:00.000Z",
+    updatedAt: "2023-10-02T12:00:00.000Z"
+  }
+];
 
-// 模拟异步数据加载
-onMounted(async () => {
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  tableData.value = [
-    {
-      date: "2016-05-02",
-      name: "张三",
-      address: "上海市普陀区金沙江路 1518 弄"
-    },
-    {
-      date: "2016-05-04",
-      name: "李四",
-      address: "上海市普陀区金沙江路 1517 弄"
-    },
-    {
-      date: "2016-05-01",
-      name: "王五",
-      address: "上海市普陀区金沙江路 1519 弄"
-    },
-    {
-      date: "2016-05-03",
-      name: "赵六",
-      address: "上海市普陀区金沙江路 1516 弄"
-    }
-    // 更多数据...
-  ];
-});
+const fetchArticlesMock = async (params: {
+  page: number;
+  pageSize: number;
+  filterText: string;
+}) => {
+  const { page, pageSize, filterText } = params;
+
+  const filteredArticles = mockArticles.filter(
+    article =>
+      article.title.includes(filterText) ||
+      article.author.includes(filterText) ||
+      article.content.includes(filterText)
+  );
+
+  const start = (page - 1) * pageSize;
+  const end = start + pageSize;
+  const paginatedArticles = filteredArticles.slice(start, end);
+
+  return {
+    data: paginatedArticles,
+    total: filteredArticles.length
+  };
+};
 </script>
 
-<style scoped>
-/* 自定义样式 */
-</style>
+<style scoped></style>
