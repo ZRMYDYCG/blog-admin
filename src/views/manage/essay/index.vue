@@ -5,6 +5,8 @@
       :columns="columns"
       :enablePagination="true"
       :customPageSize="10"
+      tableHeight="400px"
+      tableMaxHeight="600px"
     >
       <!-- 自定义操作列 -->
       <template #action="{ row }">

@@ -1,4 +1,3 @@
-<!-- ReTable.vue -->
 <template>
   <div>
     <!-- 过滤筛选功能 -->
@@ -14,6 +13,8 @@
       :data="tableData"
       style="width: 100%"
       :filter-change="handleFilterChange"
+      :height="tableHeight"
+      :max-height="tableMaxHeight"
     >
       <el-table-column
         v-for="column in columns"
@@ -85,13 +86,21 @@ interface Props {
   columns: Column[];
   enablePagination?: boolean;
   customPageSize?: number;
+  tableHeight?: string | number;
+  tableMaxHeight?: string | number;
 }
 
 const props = defineProps<Props>();
 
 // 将 props 转换为响应式引用
-const { fetchDataApi, columns, enablePagination, customPageSize } =
-  toRefs(props);
+const {
+  fetchDataApi,
+  columns,
+  enablePagination,
+  customPageSize,
+  tableHeight,
+  tableMaxHeight
+} = toRefs(props);
 
 // 定义过滤文本
 const filterText = ref("");
@@ -135,6 +144,12 @@ const handlePageSizeChange = (val: number) => {
 watch(customPageSize, newPageSize => {
   pageSize.value = newPageSize || 10;
   fetchData();
+});
+
+// 监听 tableHeight 和 tableMaxHeight 的变化
+watch([tableHeight, tableMaxHeight], ([newHeight, newMaxHeight]) => {
+  console.log("表格高度变化:", newHeight);
+  console.log("表格最大高度变化:", newMaxHeight);
 });
 
 // 组件挂载时初始化数据
