@@ -30,11 +30,13 @@
     <el-pagination
       v-if="enablePagination"
       background
-      layout="prev, pager, next"
+      layout="total, prev, pager, next, sizes"
       :total="total"
       :page-size="pageSize"
       :current-page="currentPage"
+      :page-sizes="[10, 20, 50, 100]"
       @current-change="handlePageChange"
+      @size-change="handlePageSizeChange"
     />
   </div>
 </template>
@@ -74,7 +76,7 @@ const { fetchDataApi, columns, enablePagination, customPageSize } =
 const filterText = ref("");
 
 // 定义分页相关参数
-const pageSize = ref(customPageSize?.value || 10); // 如果 customPageSize 存在则使用它，否则使用默认值 10
+const pageSize = ref(customPageSize?.value || 10);
 const currentPage = ref(1);
 const total = ref(0);
 const tableData = ref([]);
@@ -92,20 +94,26 @@ const fetchData = async () => {
 
 // 处理过滤变化
 const handleFilterChange = (filters: any) => {
-  // 根据需要处理过滤逻辑，这里调用 fetchData 更新数据
   fetchData();
 };
 
 // 处理分页变化
 const handlePageChange = (val: number) => {
   currentPage.value = val;
-  fetchData(); // 当页码变化时，更新数据
+  fetchData();
+};
+
+// 处理分页大小变化
+const handlePageSizeChange = (val: number) => {
+  pageSize.value = val;
+  currentPage.value = 1; // 重置为第一页
+  fetchData();
 };
 
 // 监听 customPageSize 的变化
 watch(customPageSize, newPageSize => {
   pageSize.value = newPageSize || 10;
-  fetchData(); // 当页码大小变化时，更新数据
+  fetchData();
 });
 
 // 组件挂载时初始化数据
