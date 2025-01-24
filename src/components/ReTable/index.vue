@@ -1,31 +1,8 @@
+<!-- ReTable.vue -->
 <template>
   <div>
-    <!-- 过滤筛选功能 -->
-    <div v-if="enableBaseSearch" style="margin-bottom: 10px">
-      <!-- 默认搜索功能 -->
-      <slot
-        name="base-search"
-        :filterText="filterText"
-        :updateFilterText="updateFilterText"
-        :fetchData="fetchData"
-      >
-        <el-input
-          :modelValue="filterText"
-          placeholder="输入关键字进行过滤"
-          style="margin-right: 10px"
-          @update:modelValue="updateFilterText"
-        />
-        <el-button @click="fetchData">搜索</el-button>
-      </slot>
-    </div>
-    <!-- 高级搜索功能 -->
-    <slot
-      name="pro-search"
-      :filterText="filterText"
-      :updateFilterText="updateFilterText"
-      :fetchData="fetchData"
-    />
-
+    <!-- 过滤表格 -->
+    <slot name="pro-search" />
     <!-- 表格组件 -->
     <el-table
       :data="tableData"
@@ -46,11 +23,9 @@
       >
         <template #default="{ row, $index }">
           <slot :name="column.prop" :row="row" :index="$index">
-            <!-- 如果有 scopedSlot，则使用 scopedSlot -->
             <template v-if="column.scopedSlot">
               <slot :name="column.scopedSlot" :row="row" :index="$index" />
             </template>
-            <!-- 否则，使用默认内容 -->
             <template v-else>
               {{ row[column.prop] }}
             </template>
@@ -58,7 +33,7 @@
         </template>
       </el-table-column>
       <!-- 自定义操作列 -->
-      <el-table-column v-if="$slots.action" label="操作" width="200px">
+      <el-table-column v-if="$slots.action" label="操作">
         <template #default="{ row, $index }">
           <slot name="action" :row="row" :index="$index" />
         </template>
@@ -74,6 +49,7 @@
       :page-size="pageSize"
       :current-page="currentPage"
       :page-sizes="[10, 20, 50, 100]"
+      style="margin-top: 10px; display: flex; justify-content: flex-end"
       @current-change="handlePageChange"
       @size-change="handlePageSizeChange"
     />
@@ -105,14 +81,14 @@ interface Props {
   fetchDataApi: (params: {
     page: number;
     pageSize: number;
-    filterText: string;
+    filterConditions?: Record<string, string>; // 用于高级搜索的过滤条件
   }) => Promise<{ data: any[]; total: number }>;
   columns: Column[];
   enablePagination?: boolean;
   customPageSize?: number;
   tableHeight?: string | number;
   tableMaxHeight?: string | number;
-  enableBaseSearch?: boolean; // 是否开启 base-search，默认不开启
+  proSearchConditions?: Record<string, string>; // 用户传入的高级搜索条件
 }
 
 const props = defineProps<Props>();
@@ -125,11 +101,13 @@ const {
   customPageSize,
   tableHeight,
   tableMaxHeight,
-  enableBaseSearch
+  proSearchConditions
 } = toRefs(props);
 
-// 定义过滤文本
-const filterText = ref("");
+// 定义过滤条件对象，直接使用传入的条件
+const filterConditions = ref<Record<string, string>>(
+  proSearchConditions.value || {}
+);
 
 // 定义分页相关参数
 const pageSize = ref(customPageSize?.value || 10);
@@ -142,7 +120,7 @@ const fetchData = async () => {
   const result = await fetchDataApi.value({
     page: currentPage.value,
     pageSize: pageSize.value,
-    filterText: filterText.value
+    filterConditions: filterConditions.value
   });
   tableData.value = result.data;
   total.value = result.total;
@@ -171,16 +149,6 @@ watch(customPageSize, newPageSize => {
   pageSize.value = newPageSize || 10;
   fetchData();
 });
-
-// 监听 filterText 的变化
-watch(filterText, () => {
-  fetchData();
-});
-
-// 更新 filterText 的方法
-const updateFilterText = (value: string) => {
-  filterText.value = value;
-};
 
 // 组件挂载时初始化数据
 fetchData();
