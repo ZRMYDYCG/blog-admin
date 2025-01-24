@@ -1,11 +1,29 @@
 <template>
   <div>
     <!-- 过滤筛选功能 -->
-    <el-input
-      v-model="filterText"
-      placeholder="输入关键字进行过滤"
-      style="margin-bottom: 10px"
-      @input="fetchData"
+    <div v-if="enableBaseSearch" style="margin-bottom: 10px">
+      <!-- 默认搜索功能 -->
+      <slot
+        name="base-search"
+        :filterText="filterText"
+        :updateFilterText="updateFilterText"
+        :fetchData="fetchData"
+      >
+        <el-input
+          :modelValue="filterText"
+          placeholder="输入关键字进行过滤"
+          style="margin-right: 10px"
+          @update:modelValue="updateFilterText"
+        />
+        <el-button @click="fetchData">搜索</el-button>
+      </slot>
+    </div>
+    <!-- 高级搜索功能 -->
+    <slot
+      name="pro-search"
+      :filterText="filterText"
+      :updateFilterText="updateFilterText"
+      :fetchData="fetchData"
     />
 
     <!-- 表格组件 -->
@@ -64,7 +82,13 @@
 
 <script setup lang="ts">
 import { ref, watch, toRefs } from "vue";
-import { ElTable, ElTableColumn, ElInput, ElPagination } from "element-plus";
+import {
+  ElTable,
+  ElTableColumn,
+  ElInput,
+  ElPagination,
+  ElButton
+} from "element-plus";
 
 // 定义 props
 interface Column {
@@ -88,6 +112,7 @@ interface Props {
   customPageSize?: number;
   tableHeight?: string | number;
   tableMaxHeight?: string | number;
+  enableBaseSearch?: boolean; // 是否开启 base-search，默认不开启
 }
 
 const props = defineProps<Props>();
@@ -99,7 +124,8 @@ const {
   enablePagination,
   customPageSize,
   tableHeight,
-  tableMaxHeight
+  tableMaxHeight,
+  enableBaseSearch
 } = toRefs(props);
 
 // 定义过滤文本
@@ -146,11 +172,15 @@ watch(customPageSize, newPageSize => {
   fetchData();
 });
 
-// 监听 tableHeight 和 tableMaxHeight 的变化
-watch([tableHeight, tableMaxHeight], ([newHeight, newMaxHeight]) => {
-  console.log("表格高度变化:", newHeight);
-  console.log("表格最大高度变化:", newMaxHeight);
+// 监听 filterText 的变化
+watch(filterText, () => {
+  fetchData();
 });
+
+// 更新 filterText 的方法
+const updateFilterText = (value: string) => {
+  filterText.value = value;
+};
 
 // 组件挂载时初始化数据
 fetchData();
