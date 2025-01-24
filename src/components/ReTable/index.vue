@@ -27,7 +27,14 @@
       >
         <template #default="{ row, $index }">
           <slot :name="column.prop" :row="row" :index="$index">
-            {{ row[column.prop] }}
+            <!-- 如果有 scopedSlot，则使用 scopedSlot -->
+            <template v-if="column.scopedSlot">
+              <slot :name="column.scopedSlot" :row="row" :index="$index" />
+            </template>
+            <!-- 否则，使用默认内容 -->
+            <template v-else>
+              {{ row[column.prop] }}
+            </template>
           </slot>
         </template>
       </el-table-column>
@@ -66,6 +73,7 @@ interface Column {
   width?: string;
   filters?: { text: string; value: string }[];
   filterMethod?: (value: string, row: any) => boolean;
+  scopedSlot?: string; // 用于指定自定义插槽名称
 }
 
 interface Props {

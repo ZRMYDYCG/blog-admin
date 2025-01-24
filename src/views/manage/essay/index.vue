@@ -15,6 +15,13 @@
           >删除</el-button
         >
       </template>
+
+      <template #customTitle="{ row }">
+        <span :style="getTitleStyle(row)">
+          {{ row?.title }}
+        </span>
+        <img :src="row?.cover" style="width: 100px; height: 100px" alt="#" />
+      </template>
     </ReTable>
   </div>
 </template>
@@ -30,10 +37,17 @@ interface Column {
   width?: string;
   filters?: { text: string; value: string }[];
   filterMethod?: (value: string, row: any) => boolean;
+  scopedSlot?: string; // 用于指定自定义插槽名称
 }
 
 const columns: Column[] = [
-  { prop: "title", label: "标题", sortable: false, width: "200px" },
+  {
+    prop: "title",
+    label: "标题",
+    sortable: false,
+    width: "200px",
+    scopedSlot: "customTitle"
+  },
   { prop: "tag", label: "标签", sortable: false, width: "300px" },
   { prop: "category", label: "分类", sortable: false, width: "300px" },
   { prop: "author", label: "作者", sortable: false, width: "150px" },
@@ -94,6 +108,16 @@ const handleEdit = (id: number) => {
 const handleDelete = (id: number) => {
   console.log("删除文章 ID:", id);
   // 在这里添加删除文章的逻辑
+};
+
+// 定义自定义文字颜色的样式
+const getTitleStyle = (row: any) => {
+  if (row.id === 1) {
+    return { color: "red" };
+  } else if (row.id === 2) {
+    return { color: "blue" };
+  }
+  return {};
 };
 </script>
 
